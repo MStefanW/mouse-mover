@@ -80,7 +80,7 @@ public class MouseMomentum {
 		System.out.println( "decay: " + decay );
 		System.out.println( "interval: " + interval );
 		System.out.println( "momentum threshold velocity: " + momentumThreshold );
-		System.out.println( "activeDecay: " + activeDecay );
+		System.out.println( "active decay: " + activeDecay );
 		System.out.println( "bounce threshold velocity: " + bounceThreshold );
 		System.out.println( "bounce confidence requirement: " + bounceConfidenceRequirement );
 		System.out.println( "sensitivity: " + sensitivity );
