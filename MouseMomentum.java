@@ -18,6 +18,7 @@ public class MouseMomentum {
 	private final int BOUNCE_THRESHOLD;
 	private final int BOUNCE_CONFIDENCE_REQUIREMENT;
 	private final float SENSITIVITY_MODIFIER;
+	private final float MIN_VELOCITY;
 	private final float MAX_VELOCITY;
 	
 	private Robot robot;
@@ -30,7 +31,7 @@ public class MouseMomentum {
 	
 	public static void main( String... args ) throws Exception {
 		
-		if ( args.length != 8 ) {
+		if ( args.length != 9 ) {
 			System.out.println( "arg 1: decay (decimal, range 0-1, range 1+ accelerates)" );
 			System.out.println( "arg 2: interval (integer, in milliseconds)" );
 			System.out.println( "arg 3: momentum threshold velocity (decimal, in pixels per interval)" );
@@ -38,8 +39,9 @@ public class MouseMomentum {
 			System.out.println( "arg 5: bounce threshold velocity (integer, in pixels per interval)" );
 			System.out.println( "arg 6: bounce confidence requirement (integer, in steps, range 1+)" );
 			System.out.println( "arg 7: sensitivity (decimal, range 0-1, range 1+ gets pretty crazy)" );
-			System.out.println( "arg 8: max velocity (decimal, in pixels per interval, value of 0 removes limit)");
-			System.out.println( "suggested default: 0.95 15 50 5 5 2 0.1 0" );
+			System.out.println( "arg 8: min velocity (decimal, in pixels per interval)");
+			System.out.println( "arg 9: max velocity (decimal, in pixels per interval, value of 0 removes limit)");
+			System.out.println( "suggested default: 0.95 15 50 5 5 2 0.1 0.1 0" );
 			System.exit( 1 );
 		}
 		
@@ -51,7 +53,8 @@ public class MouseMomentum {
 			Integer.parseInt( args[ 4 ] ),
 			Integer.parseInt( args[ 5 ] ),
 			Float.parseFloat( args[ 6 ] ),
-			Float.parseFloat( args[ 7 ] )
+			Float.parseFloat( args[ 7 ] ),
+			Float.parseFloat( args[ 8 ] )
 		);
 		
 		m.giveCursorMomentum();
@@ -65,6 +68,7 @@ public class MouseMomentum {
 		int bounceThreshold,
 		int bounceConfidenceRequirement,
 		float sensitivity,
+		float minVelocity,
 		float maxVelocity
 	) throws Exception {
 
@@ -75,6 +79,7 @@ public class MouseMomentum {
 		BOUNCE_THRESHOLD = bounceThreshold;
 		BOUNCE_CONFIDENCE_REQUIREMENT = bounceConfidenceRequirement;
 		SENSITIVITY_MODIFIER = 1 - sensitivity;
+		MIN_VELOCITY = minVelocity;
 		MAX_VELOCITY = maxVelocity;
 
 		System.out.println( "decay: " + decay );
@@ -84,6 +89,7 @@ public class MouseMomentum {
 		System.out.println( "bounce threshold velocity: " + bounceThreshold );
 		System.out.println( "bounce confidence requirement: " + bounceConfidenceRequirement );
 		System.out.println( "sensitivity: " + sensitivity );
+		System.out.println( "min velocity: " + minVelocity );
 		System.out.println( "max velocity: " + maxVelocity + (maxVelocity == 0 ? " (max disabled)" : "") );
 
 		robot = new Robot();
@@ -110,6 +116,8 @@ public class MouseMomentum {
 		Vector velocity = new Vector( velocityHistory.get( 0 ) );
 		Point manipulatedAmount = Point.difference( appliedVelocityHistory.get(0), difference );
 
+		System.out.println(currentPos + " | " + difference + " | " + velocity + " | " + manipulatedAmount);
+
 		if ( !manipulatedAmount.isZero() && manipulatedAmount.getMagnitude() >= MOMENTUM_THRESHOLD ) {
 			velocity.set(
 				difference.getX() - (SENSITIVITY_MODIFIER * manipulatedAmount.getX()),
@@ -122,6 +130,8 @@ public class MouseMomentum {
 		} else {
 			velocity.scale( DECAY );
 		}
+
+		if ( velocity.getMagnitude() < MIN_VELOCITY ) velocity.scale( 0 );
 
 		if ( MAX_VELOCITY != 0 && velocity.getMagnitude() > MAX_VELOCITY ) velocity.scale( MAX_VELOCITY / velocity.getMagnitude() );
 
@@ -324,7 +334,7 @@ public class MouseMomentum {
 			this.y = y;
 		}
 		
-		public void scale(float s) {
+		public void scale( float s ) {
 			x *= s;
 			y *= s;
 		}
