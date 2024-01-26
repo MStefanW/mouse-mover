@@ -1,3 +1,5 @@
+Moves your mouse a little more than you do!
+
 ```
 java MouseMomentum.java
 ```
